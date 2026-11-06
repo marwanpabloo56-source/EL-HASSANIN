@@ -1,6 +1,7 @@
 import { OfficialProduct, SpecialOfferItem, CustomerReview } from '../types/restaurant';
 
 // Brand & Hero image paths
+
 const imageFiles = import.meta.glob('../assets/images/*', {
   eager: true,
   query: '?url',
@@ -33,32 +34,6 @@ export const IMG_BATAREKH_KHASHENA = getImage('batarekh_khashena_roe_17939213468
 export const IMG_TAHINA_FESEEKH_SPREAD = getImage('tahini_spread_feseekh_1793921347605.jpg');
 export const IMG_BESARYA = getImage('besarya_salted_fish_1793921348522.jpg');
 export const IMG_OM_KHOLOOL = getImage('om_kholool_clams_1793921348744.jpg');
-
-// Individual authentic product image paths (19 distinct high-fidelity photos)
-export const IMG_FESEEKH_WASAT = '/src/assets/images/feseekh_wasat_dish_1793921337627.jpg';
-export const IMG_FESEEKH_KABEER = '/src/assets/images/feseekh_kabeer_dish_1793921337971.jpg';
-export const IMG_FESEEKH_MAKHLI = '/src/assets/images/feseekh_makhly_fillet_1793921339163.jpg';
-
-export const IMG_RENGA_WASAT = '/src/assets/images/renga_wasat_smoked_1793921339405.jpg';
-export const IMG_RENGA_KABEER = '/src/assets/images/renga_kabeer_smoked_1793921340141.jpg';
-export const IMG_RENGA_BATAREKH_KHASHENA = '/src/assets/images/renga_batarekh_khashena_1793921341014.jpg';
-export const IMG_RENGA_MAKHLI = '/src/assets/images/renga_makhly_fillet_1793921341094.jpg';
-
-export const IMG_MELOHA_WASAT = '/src/assets/images/meloha_wasat_aswani_1793921342370.jpg';
-export const IMG_MELOHA_KABEER = '/src/assets/images/meloha_kabeer_aswani_1793921342728.jpg';
-export const IMG_MELOHA_MAKHLI = '/src/assets/images/meloha_makhly_fillet_1793921343120.jpg';
-
-export const IMG_SARDEEN_KHALIGI = '/src/assets/images/sardeen_khaligi_dish_1793921343442.jpg';
-export const IMG_SARDEEN_BALADI_WASAT = '/src/assets/images/sardeen_baladi_wasat_1793921344198.jpg';
-export const IMG_SARDEEN_BALADI_KABEER = '/src/assets/images/sardeen_baladi_kabeer_1793921344636.jpg';
-export const IMG_SARDEEN_MAKHLI = '/src/assets/images/sardeen_makhly_fillet_1793921345869.jpg';
-
-export const IMG_BATAREKH_NAEMA = '/src/assets/images/batarekh_naema_roe_1793921346376.jpg';
-export const IMG_BATAREKH_KHASHENA = '/src/assets/images/batarekh_khashena_roe_1793921346858.jpg';
-
-export const IMG_TAHINA_FESEEKH_SPREAD = '/src/assets/images/tahini_spread_feseekh_1793921347605.jpg';
-export const IMG_BESARYA = '/src/assets/images/besarya_salted_fish_1793921348522.jpg';
-export const IMG_OM_KHOLOOL = '/src/assets/images/om_kholool_clams_1793921348744.jpg';
 
 // Restaurant official contact information
 export const RESTAURANT_INFO = {
