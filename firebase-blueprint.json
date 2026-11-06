@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Store admin or owner profile with RBAC role",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "format": "email", "maxLength": 256 },
+        "name": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "enum": ["OWNER", "ADMIN"] },
+        "createdAt": { "type": "string" },
+        "createdBy": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["uid", "email", "name", "role", "createdAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Seafood menu product item with dynamic price and weights",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "category": { "type": "string", "maxLength": 50 },
+        "categoryLabel": { "type": "string", "maxLength": 100 },
+        "pricePerKg": { "type": "number" },
+        "priceOnDemand": { "type": "boolean" },
+        "description": { "type": "string", "maxLength": 1000 },
+        "image": { "type": "string", "maxLength": 2048 },
+        "badge": { "type": "string", "maxLength": 100 },
+        "isPopular": { "type": "boolean" },
+        "isFillet": { "type": "boolean" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "category", "categoryLabel", "description", "image"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer purchase order with items, weights, and delivery status",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string", "maxLength": 64 },
+        "customerName": { "type": "string", "maxLength": 150 },
+        "customerPhone": { "type": "string", "maxLength": 30 },
+        "deliveryMethod": { "type": "string", "enum": ["delivery", "pickup"] },
+        "address": { "type": "string", "maxLength": 500 },
+        "orderNotes": { "type": "string", "maxLength": 1000 },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "deliveryFee": { "type": "number" },
+        "grandTotal": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "preparing", "completed", "cancelled"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["orderId", "customerName", "customerPhone", "deliveryMethod", "items", "grandTotal", "status"]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "Global restaurant store configuration and settings",
+      "type": "object",
+      "properties": {
+        "whatsappNumber": { "type": "string", "maxLength": 30 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "isOpen": { "type": "boolean" },
+        "deliveryFee": { "type": "number" },
+        "freeDeliveryThreshold": { "type": "number" },
+        "announcement": { "type": "string", "maxLength": 500 },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["whatsappNumber", "phone", "isOpen"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": "AdminUser",
+      "description": "Administrator and Owner accounts for dashboard access control"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Restaurant menu products managed by admins and displayed to customers"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer submitted orders for kitchen processing and delivery"
+    },
+    "/settings/{settingId}": {
+      "schema": "StoreSettings",
+      "description": "Global store settings managed exclusively by the OWNER"
+    }
+  }
+}

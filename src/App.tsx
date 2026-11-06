@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { SplashScreen } from './components/SplashScreen';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
@@ -16,13 +17,29 @@ import { Footer } from './components/Footer';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { CartDrawer } from './components/CartDrawer';
 import { BrandKitModal } from './components/BrandKitModal';
+import { AdminLogin } from './components/admin/AdminLogin';
+import { AdminLayout } from './components/admin/AdminLayout';
 import { OFFICIAL_PRODUCTS, INITIAL_REVIEWS } from './data/menuData';
 import { OfficialProduct, CartItem, SpecialOfferItem, CustomerReview } from './types/restaurant';
 import { formatWeightLabel, calculateItemPrice } from './utils/orderUtils';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from './lib/firebase';
 
 const CART_STORAGE_KEY = 'hassanein_cart_v2';
 
-export default function App() {
+function StoreApp() {
+  const { user, isAdmin, loading: authLoading } = useAuth();
+
+  // Determine if URL currently targets admin portal (supports /admin, #/admin for GitHub Pages)
+  const checkIsAdminUrl = () => {
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    return path === '/admin' || path.endsWith('/admin') || hash === '#/admin' || hash === '#admin';
+  };
+
+  const [isAdminView, setIsAdminView] = useState<boolean>(checkIsAdminUrl);
+  const [products, setProducts] = useState<OfficialProduct[]>(OFFICIAL_PRODUCTS);
+
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem(CART_STORAGE_KEY);
@@ -36,6 +53,39 @@ export default function App() {
   const [isBrandKitOpen, setIsBrandKitOpen] = useState<boolean>(false);
   const [reviews, setReviews] = useState<CustomerReview[]>(INITIAL_REVIEWS);
 
+  // Listen to browser forward/back buttons and hash changes
+  useEffect(() => {
+    const handleUrlChange = () => {
+      setIsAdminView(checkIsAdminUrl());
+    };
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+    };
+  }, []);
+
+  // Sync menu products from Firestore in real-time if available
+  useEffect(() => {
+    const unsub = onSnapshot(
+      collection(db, 'products'),
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const list: OfficialProduct[] = [];
+          snapshot.forEach((d) => {
+            list.push(d.data() as OfficialProduct);
+          });
+          setProducts(list);
+        }
+      },
+      (err) => {
+        console.warn('Using default menu products (Firestore sync warning):', err);
+      }
+    );
+    return () => unsub();
+  }, []);
+
   // Sync cart to localStorage whenever it changes
   useEffect(() => {
     try {
@@ -45,8 +95,36 @@ export default function App() {
     }
   }, [cartItems]);
 
+  const navigateToAdmin = () => {
+    try {
+      window.history.pushState(null, '', '#/admin');
+    } catch {
+      window.location.hash = '#/admin';
+    }
+    setIsAdminView(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const navigateToStore = () => {
+    try {
+      window.history.pushState(null, '', window.location.pathname.replace(/\/admin$/, '') || '/');
+    } catch {
+      window.location.hash = '';
+    }
+    setIsAdminView(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Smooth navigation to sections
   const handleNavigate = (sectionId: string) => {
+    if (isAdminView) {
+      navigateToStore();
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return;
+    }
     const el = document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -66,7 +144,6 @@ export default function App() {
     setCartItems((prev) => {
       const existingIdx = prev.findIndex((ci) => ci.cartItemId === cartItemId);
       if (existingIdx > -1) {
-        // If already in cart with exact same weight, double the weight
         const updated = [...prev];
         const newWeight = updated[existingIdx].weightKg + weightKg;
         const newPrice = product.pricePerKg ? Math.round(product.pricePerKg * newWeight) : 0;
@@ -172,6 +249,27 @@ export default function App() {
 
   const totalCartCount = cartItems.length;
 
+  // IF ADMIN ROUTE IS ACTIVE:
+  if (isAdminView) {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-[#060F1E] flex flex-col items-center justify-center text-[#D4AF37] space-y-4 font-['Cairo',sans-serif]">
+          <div className="w-10 h-10 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs text-slate-300 font-bold">جاري التحقق من الصلاحيات الأمنية...</span>
+        </div>
+      );
+    }
+
+    // Authenticated admin (OWNER or ADMIN)
+    if (user && isAdmin) {
+      return <AdminLayout onBackToStore={navigateToStore} />;
+    }
+
+    // Unauthenticated or not an admin
+    return <AdminLogin onBackToStore={navigateToStore} />;
+  }
+
+  // STANDARD PUBLIC STORE VIEW
   return (
     <div className="min-h-screen bg-[#060F1E] text-slate-100 flex flex-col antialiased selection:bg-[#D4AF37] selection:text-black font-['Cairo',sans-serif]">
       {/* 1. Grand Egyptian Luxury SplashScreen on Initial Load */}
@@ -198,7 +296,7 @@ export default function App() {
 
         {/* Official Menu with Weights & Auto-Calculated Prices */}
         <MenuSection
-          products={OFFICIAL_PRODUCTS}
+          products={products}
           onAddToCart={handleAddToCart}
         />
 
@@ -219,6 +317,7 @@ export default function App() {
       <Footer
         onNavigate={handleNavigate}
         onOpenBrandKit={() => setIsBrandKitOpen(true)}
+        onOpenAdmin={navigateToAdmin}
       />
 
       {/* 5. Floating WhatsApp Button & Quick Cart Access */}
@@ -243,5 +342,13 @@ export default function App() {
         onClose={() => setIsBrandKitOpen(false)}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <StoreApp />
+    </AuthProvider>
   );
 }

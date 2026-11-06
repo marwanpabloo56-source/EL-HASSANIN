@@ -6,9 +6,10 @@ import { BrandLogo } from './BrandLogo';
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
   onOpenBrandKit: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenBrandKit }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenBrandKit, onOpenAdmin }) => {
   return (
     <footer className="bg-[#050B14] border-t border-[#D4AF37]/25 text-slate-400 text-right pt-14 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -149,9 +150,26 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenBrandKit }) =>
         {/* Bottom Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3">
           <p>© {new Date().getFullYear()} فسخاني الحسانين. جميع الحقوق محفوظة.</p>
-          <p className="text-[11px] text-slate-400">
-            16 شارع الدويدار - حدائق القبة · أصالة الطعم.. حكاية من زمان
-          </p>
+          
+          <div className="flex items-center gap-4 text-[11px]">
+            <p className="text-slate-400">
+              16 شارع الدويدار - حدائق القبة · أصالة الطعم.. حكاية من زمان
+            </p>
+            {onOpenAdmin && (
+              <>
+                <span className="text-slate-700">·</span>
+                <button
+                  type="button"
+                  onClick={onOpenAdmin}
+                  className="text-slate-500 hover:text-[#D4AF37] transition-colors flex items-center gap-1 cursor-pointer"
+                  title="الدخول للوحة تحكم المطعم"
+                >
+                  <Shield className="w-3 h-3 text-[#D4AF37]/70" />
+                  <span>بوابة الإدارة</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
       </div>

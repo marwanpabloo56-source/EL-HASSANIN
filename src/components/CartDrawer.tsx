@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { CartItem } from '../types/restaurant';
 import { RESTAURANT_INFO } from '../data/menuData';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import {
   formatWeightLabel,
   generateOrderId,
@@ -87,8 +89,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     onUpdateWeight(cartItemId, nextWeight);
   };
 
-  // Handle final checkout and open WhatsApp
-  const handleProceedToWhatsApp = (e: React.FormEvent) => {
+  // Handle final checkout, persist to Firestore and open WhatsApp
+  const handleProceedToWhatsApp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
 
@@ -105,6 +107,33 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       deliveryFee,
       grandTotal,
     };
+
+    // Save order directly into Firestore for real-time dashboard display
+    try {
+      await setDoc(doc(db, 'orders', newOrderId), {
+        orderId: newOrderId,
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        deliveryMethod,
+        address: deliveryMethod === 'delivery' ? address.trim() : 'استلام من فرع حدائق القبة',
+        orderNotes: orderNotes.trim() || '',
+        items: cartItems.map((ci) => ({
+          productId: ci.productId,
+          productName: ci.productName,
+          weightKg: ci.weightKg,
+          weightLabel: ci.weightLabel,
+          unitPricePerKg: ci.unitPricePerKg || 0,
+          totalPrice: ci.totalPrice,
+        })),
+        subtotal,
+        deliveryFee,
+        grandTotal,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      });
+    } catch (saveErr) {
+      console.warn('Could not save order to Firestore (continuing to WhatsApp anyway):', saveErr);
+    }
 
     const message = buildWhatsAppOrderMessage(orderData);
     const targetUrl = getWhatsAppOrderUrl(message);

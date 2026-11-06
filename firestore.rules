@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwner() {
+      return isAdmin() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'OWNER';
+    }
+
+    // Admins Collection - Role-Based Access Control (RBAC)
+    match /admins/{adminId} {
+      // Any authenticated admin can read admin documents
+      allow read: if isAdmin();
+
+      // Creation: Either by existing OWNER, or one-time initial system bootstrap strictly by the authorized owner
+      allow create: if isValidId(adminId) && (
+        isOwner() ||
+        (
+          isSignedIn() &&
+          request.auth.uid == adminId &&
+          request.resource.data.role == 'OWNER' &&
+          request.auth.token.email == 'marwanpabloo56@gmail.com' &&
+          !exists(/databases/$(database)/documents/settings/initialized)
+        )
+      );
+
+      // Updates: Only OWNER can update admins.
+      allow update: if isOwner() && isValidId(adminId);
+
+      // Deletion: Only OWNER can delete admins (and OWNER cannot delete their own account)
+      allow delete: if isOwner() && request.auth.uid != adminId;
+    }
+
+    // Products Collection - Menu items
+    match /products/{productId} {
+      // Public customers can read products to view the menu
+      allow read: if true;
+
+      // Only authenticated ADMIN or OWNER can create, modify, or delete menu items
+      allow create, update, delete: if isAdmin() && isValidId(productId);
+    }
+
+    // Orders Collection - Customer purchases
+    match /orders/{orderId} {
+      // Any customer can submit a new order with valid fields
+      allow create: if isValidId(orderId) &&
+        request.resource.data.customerName is string &&
+        request.resource.data.customerName.size() >= 2 &&
+        request.resource.data.customerPhone is string &&
+        request.resource.data.customerPhone.size() >= 8 &&
+        request.resource.data.grandTotal is number &&
+        request.resource.data.status in ['pending', 'preparing', 'completed', 'cancelled'];
+
+      // Only ADMIN or OWNER can view, update status, or manage customer orders
+      allow read, update, delete: if isAdmin() && isValidId(orderId);
+    }
+
+    // Store Settings Collection
+    match /settings/{settingId} {
+      // Public customers can read store contact and announcement settings
+      allow read: if true;
+
+      // Initial initialization or OWNER management
+      allow write: if isOwner() ||
+        (
+          settingId == 'initialized' &&
+          isSignedIn() &&
+          request.auth.token.email == 'marwanpabloo56@gmail.com' &&
+          !exists(/databases/$(database)/documents/settings/initialized)
+        );
+    }
+  }
+}
