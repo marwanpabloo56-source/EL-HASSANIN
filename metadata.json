@@ -1,0 +1,8 @@
+{
+  "name": "Remix فسخاني الحسانين",
+  "description": "الموقع الرسمي لفسخاني الحسانين - أفخم تشكيلة فسيخ ورنجة وملوحة وأسماك مملحة في مصر. أصالة الطعم.. حكاية من زمان.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
