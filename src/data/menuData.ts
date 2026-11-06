@@ -1,9 +1,38 @@
 import { OfficialProduct, SpecialOfferItem, CustomerReview } from '../types/restaurant';
 
 // Brand & Hero image paths
-export const EMBLEM_LOGO_IMG = '/src/assets/images/brand_royal_emblem_1793920219385.jpg';
-export const HERO_IMG = '/src/assets/images/hero_feseekh_renga_spread_1793914927371.jpg';
-export const ROYAL_FEAST_IMG = '/src/assets/images/family_royal_feast_platter_1793914930617.jpg';
+const imageFiles = import.meta.glob('../assets/images/*', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
+const getImage = (filename: string) =>
+  imageFiles[`../assets/images/${filename}`] || '';
+
+export const EMBLEM_LOGO_IMG = getImage('brand_royal_emblem_1793920219385.jpg');
+export const HERO_IMG = getImage('hero_feseekh_renga_spread_1793914927371.jpg');
+export const ROYAL_FEAST_IMG = getImage('family_royal_feast_platter_1793914930617.jpg');
+
+export const IMG_FESEEKH_WASAT = getImage('feseekh_wasat_dish_1793921337627.jpg');
+export const IMG_FESEEKH_KABEER = getImage('feseekh_kabeer_dish_1793921337971.jpg');
+export const IMG_FESEEKH_MAKHLI = getImage('feseekh_makhly_fillet_1793921339163.jpg');
+export const IMG_RENGA_WASAT = getImage('renga_wasat_smoked_1793921339405.jpg');
+export const IMG_RENGA_KABEER = getImage('renga_kabeer_smoked_1793921340141.jpg');
+export const IMG_RENGA_BATAREKH_KHASHENA = getImage('renga_batarekh_khashena_1793921341014.jpg');
+export const IMG_RENGA_MAKHLI = getImage('renga_makhly_fillet_1793921341094.jpg');
+export const IMG_MELOHA_WASAT = getImage('meloha_wasat_aswani_1793921342370.jpg');
+export const IMG_MELOHA_KABEER = getImage('meloha_kabeer_aswani_1793921342728.jpg');
+export const IMG_MELOHA_MAKHLI = getImage('meloha_makhly_fillet_1793921343120.jpg');
+export const IMG_SARDEEN_KHALIGI = getImage('sardeen_khaligi_dish_1793921343442.jpg');
+export const IMG_SARDEEN_BALADI_WASAT = getImage('sardeen_baladi_wasat_1793921344198.jpg');
+export const IMG_SARDEEN_BALADI_KABEER = getImage('sardeen_baladi_kabeer_1793921344636.jpg');
+export const IMG_SARDEEN_MAKHLI = getImage('sardeen_makhly_fillet_1793921345869.jpg');
+export const IMG_BATAREKH_NAEMA = getImage('batarekh_naema_roe_1793921346376.jpg');
+export const IMG_BATAREKH_KHASHENA = getImage('batarekh_khashena_roe_1793921346858.jpg');
+export const IMG_TAHINA_FESEEKH_SPREAD = getImage('tahini_spread_feseekh_1793921347605.jpg');
+export const IMG_BESARYA = getImage('besarya_salted_fish_1793921348522.jpg');
+export const IMG_OM_KHOLOOL = getImage('om_kholool_clams_1793921348744.jpg');
 
 // Individual authentic product image paths (19 distinct high-fidelity photos)
 export const IMG_FESEEKH_WASAT = '/src/assets/images/feseekh_wasat_dish_1793921337627.jpg';
